@@ -20,6 +20,8 @@ export const register = async (req, res) => {
       },
     });
 
+    console.log(newUser);
+
     // sending response to client
     res.status(201).json({ message: "User created successfully" });
   } catch (error) {
@@ -68,6 +70,9 @@ export const login = async (req, res) => {
       { expiresIn: age }
     );
 
+    // except for the password all information will be sent as response
+    const { password: userPassword, ...userInfo } = user;
+
     res
       .cookie("token", token, {
         httpOnly: true,
@@ -75,10 +80,10 @@ export const login = async (req, res) => {
         maxAge: age,
       })
       .status(200)
-      .json({ message: "Login successful" });
+      .json(userInfo);
   } catch (error) {
     console.log(error);
-    res.status((500).json({ message: "Failed to login!" }));
+    res.status(500).json({ message: "Failed to create user!" });
   }
 };
 

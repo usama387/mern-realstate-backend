@@ -3,20 +3,33 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import postRoute from "./routes/post.route.js";
 import authRoute from "./routes/auth.route.js";
+import cors from "cors";
 import dotenv from "dotenv";
-
-// Load environment variables from .env file
-dotenv.config();
 
 const app = express();
 
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+  })
+);
+
+// Load environment variables from .env file
+dotenv.config();
+console.log(process.env.JWT_SECRET_KEY);
+
+// for json responses
 app.use(express.json());
+
+// for cookies
 app.use(cookieParser());
 
 app.use("/api/posts", postRoute);
 
 app.use("/api/auth", authRoute);
 
-app.listen(8700, () => {
-  console.log("The app server is running on 8700");
+// Start the server
+const PORT = 8700;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
