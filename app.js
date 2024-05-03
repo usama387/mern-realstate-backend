@@ -3,6 +3,7 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import postRoute from "./routes/post.route.js";
 import authRoute from "./routes/auth.route.js";
+import testRoute from "./routes/test.route.js";
 import cors from "cors";
 import dotenv from "dotenv";
 
@@ -24,9 +25,14 @@ app.use(express.json());
 // for cookies
 app.use(cookieParser());
 
+// Realstate Post Routes
 app.use("/api/posts", postRoute);
 
+// Authentication Routes
 app.use("/api/auth", authRoute);
+
+// // Middleware test routes
+app.use("/api/test", testRoute);
 
 // Start the server
 const PORT = 8700;
