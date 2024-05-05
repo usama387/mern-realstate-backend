@@ -1,17 +1,18 @@
 import bcrypt from "bcrypt";
-import prisma from "../lib/prisma.js";
 import jwt from "jsonwebtoken";
+import prisma from "../lib/prisma.js";
 
-// first controller for registeration
 export const register = async (req, res) => {
-  // destructuring items from request body
   const { username, email, password } = req.body;
 
   try {
-    // hashing password with bcrypt method in 10 digits
+    // HASH THE PASSWORD
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // creating new user with prisma and mongodb
+    console.log(hashedPassword);
+
+    // CREATE A NEW USER AND SAVE TO DB
     const newUser = await prisma.user.create({
       data: {
         username,
@@ -22,73 +23,62 @@ export const register = async (req, res) => {
 
     console.log(newUser);
 
-    // sending response to client
     res.status(201).json({ message: "User created successfully" });
-  } catch (error) {
-    console.log(error);
-    res.status((500).json({ message: "Failed to create user!" }));
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Failed to create user!" });
   }
 };
 
-// second controller for login and cookie json web token authentication
 export const login = async (req, res) => {
-  // destructuring items from request body
   const { username, password } = req.body;
 
   try {
-    // finding user with prisma and mongodb using username
+    // CHECK IF THE USER EXISTS
+
     const user = await prisma.user.findUnique({
-      where: {
-        username,
-      },
+      where: { username },
     });
 
-    // when user not found
-    if (!user) {
-      res.status(401).json({ message: "Invalid Credentials!" });
-    }
+    if (!user) return res.status(400).json({ message: "Invalid Credentials!" });
 
-    // comparing password and sending response
+    // CHECK IF THE PASSWORD IS CORRECT
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
-    if (!isPasswordValid) {
-      res.status(401).json({ message: "Password does not match!" });
-    }
+    if (!isPasswordValid)
+      return res.status(400).json({ message: "Invalid Credentials!" });
 
-    // not a good way to get cookies
-    // res.setHeader("Set-Cookie", "test=" + "myValue").json("success");
+    // GENERATE COOKIE TOKEN AND SEND TO THE USER
 
-    // cookies expire timing approx 1 week
+    // res.setHeader("Set-Cookie", "test=" + "myValue").json("success")
     const age = 1000 * 60 * 60 * 24 * 7;
 
-    // creating a json web token for user
     const token = jwt.sign(
       {
         id: user.id,
-        isAdmin: true,
+        isAdmin: false,
       },
       process.env.JWT_SECRET_KEY,
       { expiresIn: age }
     );
 
-    // except for the password all information will be sent as response
     const { password: userPassword, ...userInfo } = user;
 
     res
       .cookie("token", token, {
         httpOnly: true,
-        // secure: true,
+        // secure:true,
         maxAge: age,
       })
       .status(200)
       .json(userInfo);
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Failed to create user!" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Failed to login!" });
   }
 };
 
-// first controller for logout
 export const logout = (req, res) => {
-  res.clearCookie("token").status(200).json({ message: "Logout Sucessfull" });
+  res.clearCookie("token").status(200).json({ message: "Logout Successful" });
 };
