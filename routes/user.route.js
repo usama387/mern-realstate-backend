@@ -1,6 +1,6 @@
 // This files auth routes rest apis
 import express from "express";
-// import { verifyToken } from "../middleware/verifyToken.js";
+import { verifyToken } from "../middleware/verifyToken.js";
 import {
   deleteUser,
   getUser,
@@ -14,12 +14,12 @@ const router = express.Router();
 router.get("/", getUsers);
 
 // api route to get a single user in the db
-router.get("/:id",  getUser);
+router.get("/:id", verifyToken, getUser);
 
 // api route to update a single user in the db
-router.put("/:id",  updateUser);
+router.put("/:id",  verifyToken, updateUser);
 
 // api route to delete a single user in the db
-router.delete("/:id",  deleteUser);
+router.delete("/:id", verifyToken, deleteUser);
 
 export default router;

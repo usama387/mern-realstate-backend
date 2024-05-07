@@ -14,7 +14,6 @@ datasource db {
 }
 
 // My first model is User in first i am connecting prism id t mongodb default _id 
-
 model User {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   email     String   @unique
@@ -22,4 +21,54 @@ model User {
   password  String
   avatar    String?
   createdAt DateTime @default(now())
+  posts     Post[]
+}
+
+// Second model for Posts data
+model Post {
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  title      String
+  price      Int
+  images     String[]
+  address    String
+  city       String
+  bedroom    Int
+  bathroom   Int
+  latitude   String
+  longitude  String
+  type       Type
+  property   Property
+  createdAt  DateTime    @default(now())
+  user       User        @relation(fields: [userId], references: [id])
+  userId     String      @db.ObjectId
+  postDetail PostDetail?
+}
+
+// Purpose of peoperty type for filteration
+enum Type {
+  buy
+  rent
+}
+
+// Property type for filteration
+enum Property {
+  apartment
+  house
+  condo
+  land
+}
+
+// Post Details for single page
+model PostDetail {
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  desc       String
+  utilities  String?
+  pet        String?
+  income     String?
+  size       Int?
+  school     Int?
+  bus        Int?
+  restaurant Int?
+  post       Post    @relation(fields: [postId], references: [id])
+  postId     String  @unique @db.ObjectId
 }

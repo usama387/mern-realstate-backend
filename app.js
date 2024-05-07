@@ -10,12 +10,19 @@ import dotenv from "dotenv";
 
 const app = express();
 
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    credentials: true,
-  })
-);
+// for json responses
+app.use(express.json());
+
+// for cookies
+app.use(cookieParser());
+
+// Define your CORS options
+const corsOptions = {
+  origin: "http://localhost:5173",
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 
 // Load environment variables from .env file
 dotenv.config();
@@ -24,9 +31,6 @@ console.log(process.env.CLIENT_URL);
 
 // for json responses
 app.use(express.json());
-
-// for cookies
-app.use(cookieParser());
 
 // Authentication Routes
 app.use("/api/auth", authRoute);

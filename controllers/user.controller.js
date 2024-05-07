@@ -1,41 +1,43 @@
 import prisma from "../lib/prisma.js";
 import bcrypt from "bcrypt";
 
-// first api controller to to get all users in the db using try block query without any condition i simply return json response
+// First controller to get all users
 export const getUsers = async (req, res) => {
   try {
     const users = await prisma.user.findMany();
-
     res.status(200).json(users);
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Failed to fetch users!" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Failed to get users!" });
   }
 };
 
-// second api controller to to get a single user and then return json response
+// second controller to get single user
 export const getUser = async (req, res) => {
   const id = req.params.id;
-
   try {
     const user = await prisma.user.findUnique({
       where: { id },
     });
-
     res.status(200).json(user);
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Failed to fetch user!" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Failed to get user!" });
   }
 };
 
-// third api controller that updates the user
+// second controller to update single user
 export const updateUser = async (req, res) => {
-  const id = req.params.id; // Get the id from the URL params
+  const id = req.params.id;
+  const tokenUserId = req.userId;
   const { password, avatar, ...inputs } = req.body;
 
+  if (id !== tokenUserId) {
+    return res.status(403).json({ message: "Not Authorized!" });
+  }
+
+  let updatedPassword = null;
   try {
-    let updatedPassword = null;
     if (password) {
       updatedPassword = await bcrypt.hash(password, 10);
     }
@@ -58,20 +60,22 @@ export const updateUser = async (req, res) => {
   }
 };
 
-// third api controller to to get all users in the db
+// Fourth controller to delete a single user
 export const deleteUser = async (req, res) => {
   const id = req.params.id;
+  const tokenUserId = req.userId;
+
+  if (id !== tokenUserId) {
+    return res.status(403).json({ message: "Not Authorized!" });
+  }
 
   try {
     await prisma.user.delete({
-      where: {
-        id,
-      },
+      where: { id },
     });
-
-    res.status(200).json({ message: "User deleted " });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Failed to delete user!" });
+    res.status(200).json({ message: "User deleted" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Failed to delete users!" });
   }
 };
