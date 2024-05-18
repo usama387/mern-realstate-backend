@@ -49,7 +49,7 @@ export const login = async (req, res) => {
     // GENERATE COOKIE TOKEN AND SEND TO THE USER
     const age = 1000 * 60 * 60 * 24 * 7;
     const secretKey = "tF6VQ3R6jaXbBUsAAt/lcAu+0JzRVRTvpB2c6LqHfvE=";
-    const cookieToken = jwt.sign(
+    const token = jwt.sign(
       {
         id: user.id,
       },
@@ -58,7 +58,7 @@ export const login = async (req, res) => {
     );
     const { password: userPassword, ...userInfo } = user;
     res
-      .cookie("myToken", cookieToken, {
+      .cookie("token", token, {
         httpOnly: true,
         maxAge: age,
       })
