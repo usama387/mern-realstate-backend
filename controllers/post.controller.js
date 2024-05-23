@@ -1,4 +1,5 @@
 import prisma from "../lib/prisma.js";
+import jwt from "jsonwebtoken";
 
 // first controller to get all posts
 export const getPosts = async (req, res) => {
@@ -29,10 +30,12 @@ export const getPosts = async (req, res) => {
   }
 };
 
-// second controller to get single post and it's single page detail and user related data
+// second controller to get all single post details, selected user data to display and information either the post is saved or not
+
 export const getPost = async (req, res) => {
   const id = req.params.id;
   try {
+    // Fetch all the details required to show on a single page
     const post = await prisma.post.findUnique({
       where: { id },
       include: {
@@ -46,10 +49,34 @@ export const getPost = async (req, res) => {
       },
     });
 
-    res.status(200).json(post);
+    const token = req.cookies?.token;
+    const secretKey = "tF6VQ3R6jaXbBUsAAt/lcAu+0JzRVRTvpB2c6LqHfvE=";
+
+    if (token) {
+      jwt.verify(token, secretKey, async (err, payload) => {
+        if (!err) {
+          const saved = await prisma.savedPost.findUnique({
+            where: {
+              userId_postId: {
+                postId: id,
+                userId: payload.id,
+              },
+            },
+          });
+          return res
+            .status(200)
+            .json({ ...post, isSaved: saved ? true : false });
+        } else {
+          console.log("Token verification error:", err);
+        }
+        return res.status(200).json({ ...post, isSaved: false });
+      });
+    } else {
+      return res.status(200).json({ ...post, isSaved: false });
+    }
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Failed to get post" });
+    return res.status(500).json({ message: "Failed to get post" });
   }
 };
 
@@ -86,7 +113,7 @@ export const updatePost = async (req, res) => {
   }
 };
 
-// fifth = controller to delete Post
+// fifth controller to delete Post
 export const deletePost = async (req, res) => {
   const id = req.params.id;
   const tokenUserId = req.userId;

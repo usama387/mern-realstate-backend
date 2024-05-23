@@ -79,3 +79,44 @@ export const deleteUser = async (req, res) => {
     res.status(500).json({ message: "Failed to delete users!" });
   }
 };
+
+// Fifth controller to save a Post
+export const savePost = async (req, res) => {
+  // taking post id from request body
+  const postId = req.body.postId;
+
+  // taking userId id from user made request
+  const tokenUserId = req.userId;
+
+  try {
+    // locating post to be saved for the user with the help of user token and post id
+    const savedPost = await prisma.savedPost.findUnique({
+      where: {
+        userId_postId: {
+          userId: tokenUserId,
+          postId,
+        },
+      },
+    });
+
+    // If the post is already exits it deletes it using where object otherwise creates it using data parameter
+    if (savedPost) {
+      await prisma.savedPost.delete({
+        where: {
+          id: savedPost.id,
+        },
+      });
+      res.status(200).json({ message: "Post removed from Saved❤" });
+    } else {
+      await prisma.savedPost.create({
+        data: {
+          userId: tokenUserId,
+          postId,
+        },
+      });
+      res.status(200).json({ message: "Post Saved Successfully" });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
