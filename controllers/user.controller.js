@@ -120,3 +120,30 @@ export const savePost = async (req, res) => {
     console.log(error);
   }
 };
+
+// sixth controller to fetch saved posts on profile page
+export const profilePosts = async (req, res) => {
+  // taking userId id from user made request
+  const tokenUserId = req.params.userId;
+
+  try {
+    // fetching all posts created by user with its token
+    const userPosts = await prisma.post.findMany({
+      where: { userId: tokenUserId },
+    });
+
+    // fetching all saved posts by the user with the help of user token
+    const saved = await prisma.savedPost.findMany({
+      where: { userId: tokenUserId },
+      include: { post: true },
+    });
+
+    // mapping and getting the post only
+    const savedPosts = saved.map((item) => item.post);
+
+    // sending all posts as response in list and then saved posts in the saved section
+    res.status(200).json({ userPosts, savedPosts });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to get Profile Posts" });
+  }
+};
