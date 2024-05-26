@@ -5,6 +5,8 @@ import postRoute from "./routes/post.route.js";
 import authRoute from "./routes/auth.route.js";
 import testRoute from "./routes/test.route.js";
 import userRoute from "./routes/user.route.js";
+import chatRoute from "./routes/chat.route.js";
+import messageRoute from "./routes/message.route.js";
 import cors from "cors";
 import dotenv from "dotenv";
 
@@ -43,6 +45,12 @@ app.use("/api/test", testRoute);
 
 // Realstate Post Routes
 app.use("/api/posts", postRoute);
+
+// chat route
+app.use("/api/chats", chatRoute);
+
+// // message route
+app.use("/api/messages", messageRoute);
 
 // Start the server
 const PORT = 8700;
