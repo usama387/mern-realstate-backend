@@ -2,10 +2,9 @@ import prisma from "../lib/prisma.js";
 
 // first controller to get all the chats
 export const getChats = async (req, res) => {
-  //   extracting token from user made request
   const tokenUserId = req.userId;
+
   try {
-    //   getting all the chats from the database for this user
     const chats = await prisma.chat.findMany({
       where: {
         userIDs: {
@@ -14,9 +13,27 @@ export const getChats = async (req, res) => {
       },
     });
 
+    // mapping over chats with for loop to get user ids
+    for (const chat of chats) {
+      const receiverId = chat.userIDs.find((id) => id !== tokenUserId);
+
+      const receiver = await prisma.user.findUnique({
+        where: {
+          id: receiverId,
+        },
+        select: {
+          id: true,
+          username: true,
+          avatar: true,
+        },
+      });
+      chat.receiver = receiver;
+    }
+
     res.status(200).json(chats);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to get Chats" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Failed to get chats!" });
   }
 };
 
@@ -78,6 +95,7 @@ export const addChat = async (req, res) => {
 
     res.status(200).json(newChat);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Failed to add this Chat" });
   }
 };
@@ -105,6 +123,7 @@ export const readChat = async (req, res) => {
 
     res.status(200).json(updatedChat);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Failed to read Chat" });
   }
 };
